@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 LABEL maintainer="Josh.5 <jsunnex@gmail.com>"
 
 # Update package repos
@@ -18,6 +18,7 @@ RUN \
         && apt-get install -y --no-install-recommends \
             locales \
         && echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen \
+        && echo 'en_GB.UTF-8 UTF-8' >> /etc/locale.gen \
         && locale-gen \
     && \
     echo "**** Section cleanup ****" \
@@ -482,7 +483,6 @@ RUN \
     echo
 
 # Install Sunshine
-COPY --from=lizardbyte/sunshine:v2025.122.141614-debian-bookworm /sunshine.deb /usr/src/sunshine.deb
 RUN \
     echo "**** Update apt database ****" \
         && apt-get update \
@@ -490,6 +490,12 @@ RUN \
     echo "**** Install Sunshine requirements ****" \
         && apt-get install -y \
             va-driver-all \
+    && \
+    echo "**** Download latest Sunshine release ****" \
+        && SUNSHINE_RELEASE=$(curl -sX GET "https://api.github.com/repos/LizardByte/Sunshine/releases/latest" | jq -r '.tag_name') \
+        && SUNSHINE_URL=$(curl -sX GET "https://api.github.com/repos/LizardByte/Sunshine/releases/latest" | jq -r '.assets[] | select(.name | contains("sunshine-debian-trixie-amd64.deb")) | .browser_download_url') \
+        && echo "Downloading Sunshine ${SUNSHINE_RELEASE} from ${SUNSHINE_URL}" \
+        && wget -O /usr/src/sunshine.deb "${SUNSHINE_URL}" \
     && \
     echo "**** Install Sunshine ****" \
         && apt-get install -y \
