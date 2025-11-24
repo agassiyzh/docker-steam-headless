@@ -468,7 +468,6 @@ RUN \
     echo "**** Install Steam ****" \
         && apt-get install -y --no-install-recommends \
             steam-installer \
-            gamescope \
         && ln -sf /usr/games/steam /usr/bin/steam \
     && \
     echo "**** Section cleanup ****" \
@@ -480,6 +479,9 @@ RUN \
             /tmp/* \
     && \
     echo
+
+    #             gamescope \
+    #  Seems to be missing in trixie
 
 # Install Sunshine
 RUN \
