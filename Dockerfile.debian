@@ -34,6 +34,25 @@ ENV \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8
 
+# Install fonts-noto-cjk
+RUN \
+    echo "**** Update apt database ****" \
+        && apt-get update \
+    && \
+    echo "**** Install Noto CJK fonts ****" \
+        && apt-get install -y --no-install-recommends \
+            fonts-noto-cjk \
+    && \
+    echo "**** Section cleanup ****" \
+        && apt-get clean autoclean -y \
+        && apt-get autoremove -y \
+        && rm -rf \
+            /var/lib/apt/lists/* \
+            /var/tmp/* \
+            /tmp/* \
+    && \
+    echo
+
 # Re-install certificates
 RUN \
     echo "**** Update apt database ****" \
