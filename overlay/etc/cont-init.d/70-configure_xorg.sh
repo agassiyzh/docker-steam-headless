@@ -1,13 +1,47 @@
 
 # Fech NVIDIA GPU device (if one exists)
+# Helper function to get GPU UUID with retries
+function get_gpu_uuid_with_retry {
+    local target_id="$1"
+    local max_attempts=10
+    local attempt=1
+    local uuid=""
+
+    while [ $attempt -le $max_attempts ]; do
+        if [ -n "${target_id}" ]; then
+            uuid=$(nvidia-smi --format=csv --id="${target_id}" --query-gpu=uuid 2> /dev/null | sed -n 2p)
+        else
+            uuid=$(nvidia-smi --format=csv --query-gpu=uuid 2> /dev/null | sed -n 2p)
+        fi
+
+        if [ -n "${uuid}" ]; then
+            echo "${uuid}"
+            return 0
+        fi
+
+        if [ $attempt -lt $max_attempts ]; then
+            echo "Waiting for NVIDIA GPU to be available (Attempt ${attempt}/${max_attempts})..." >&2
+            sleep 1
+        fi
+        ((attempt++))
+    done
+    return 1
+}
+
+# Fetch NVIDIA GPU device (if one exists)
 if [ "${NVIDIA_VISIBLE_DEVICES:-}" == "all" ]; then
-    export gpu_select=$(nvidia-smi --format=csv --query-gpu=uuid 2> /dev/null | sed -n 2p)
+    export gpu_select=$(get_gpu_uuid_with_retry "")
 elif [ -z "${NVIDIA_VISIBLE_DEVICES:-}" ]; then
-    export gpu_select=$(nvidia-smi --format=csv --query-gpu=uuid 2> /dev/null | sed -n 2p)
+    export gpu_select=$(get_gpu_uuid_with_retry "")
 else
-    export gpu_select=$(nvidia-smi --format=csv --id=$(echo "$NVIDIA_VISIBLE_DEVICES" | cut -d ',' -f1) --query-gpu=uuid | sed -n 2p)
+    # Try with specific ID
+    device_id=$(echo "$NVIDIA_VISIBLE_DEVICES" | cut -d ',' -f1)
+    export gpu_select=$(get_gpu_uuid_with_retry "$device_id")
+    
+    # Fallback if specific ID fails
     if [ -z "$gpu_select" ]; then
-        export gpu_select=$(nvidia-smi --format=csv --query-gpu=uuid 2> /dev/null | sed -n 2p)
+        echo "Could not find GPU with ID ${device_id}, falling back to any available GPU..." >&2
+        export gpu_select=$(get_gpu_uuid_with_retry "")
     fi
 fi
 
