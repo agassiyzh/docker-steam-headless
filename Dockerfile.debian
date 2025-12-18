@@ -314,9 +314,6 @@ RUN \
     && \
     echo "**** Configure flatpak ****" \
         && flatpak remote-add flathub https://flathub.org/repo/flathub.flatpakrepo \
-        && wget https://mirror.sjtu.edu.cn/flathub/flathub.gpg -O /tmp/flathub.gpg \
-        && flatpak remote-modify --gpg-import=/tmp/flathub.gpg flathub \
-        && flatpak  remote-modify flathub --url=https://mirror.sjtu.edu.cn/flathub \
         && dpkg-statoverride --update --add root root 0755 /usr/bin/bwrap \
     && \
     echo "**** Section cleanup ****" \
