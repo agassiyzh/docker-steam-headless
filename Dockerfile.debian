@@ -313,7 +313,9 @@ RUN \
             gnome-software-plugin-flatpak \
     && \
     echo "**** Configure flatpak ****" \
-        && flatpak remote-add flathub https://flathub.org/repo/flathub.flatpakrepo \
+        && flatpak remote-add flathub https://mirror.sjtu.edu.cn/flathub \
+        && wget https://mirror.sjtu.edu.cn/flathub/flathub.gpg -O /tmp/flathub.gpg \
+        && flatpak remote-modify --gpg-import=/tmp/flathub.gpg flathub \
         && dpkg-statoverride --update --add root root 0755 /usr/bin/bwrap \
     && \
     echo "**** Section cleanup ****" \
